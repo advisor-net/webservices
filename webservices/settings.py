@@ -10,11 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-from pathlib import Path
 import os
+from datetime import timedelta
+from pathlib import Path
+
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
-from datetime import timedelta
+
 from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -125,7 +127,6 @@ DATABASES = {
 }
 
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -196,9 +197,7 @@ SIMPLE_JWT = {
 }
 
 # authentication
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-)
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
 # RABBITMQ
 RABBITMQ_USER = get_secret('RABBITMQ_USER')
