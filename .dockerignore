@@ -1,0 +1,18 @@
+# Git folder and file
+.gitignore
+.git/
+
+# PyCharm folder
+.idea/
+
+# Virtualenv folder
+venv/
+static/
+
+# Docker's files
+.dockerignore
+docker-compose.yml
+Dockerfile
+
+# Pyhton tests coverage file
+.coverage
