@@ -242,13 +242,12 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
-# static assets
-MEDIA_URL = '/media/'
-STATIC_URL = '/django_static/'
-STATIC_ROOT = BASE_DIR / 'django_static'
+# TODO: figure this out
+STATIC_URL = '/tmp/static/'
+STATIC_ROOT = '/tmp/static/'
+STATICFILE_DIRS = [STATIC_ROOT]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
