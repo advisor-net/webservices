@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
@@ -40,6 +41,11 @@ def get_secret(key: str) -> str:
 
 def get_bool_secret(key: str) -> bool:
     return bool(int(get_secret(key)))
+
+
+def get_host(url: str) -> str:
+    parsed_url = urlparse(url)
+    return f'{parsed_url.scheme}://{parsed_url.netloc}'
 
 
 # Quick-start development settings - unsuitable for production
@@ -74,13 +80,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # third party
+    'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_celery_beat',
+    'django_celery_results',
 ]
 MY_APPS = ['authentication']
 INSTALLED_APPS += MY_APPS
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -89,6 +99,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS
+# look here: https://pypi.org/project/django-cors-headers/
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [get_host(API_URL), get_host(SITE_URL)]
+CSRF_TRUSTED_ORIGINS = [get_host(API_URL), get_host(SITE_URL)]
 
 ROOT_URLCONF = 'webservices.urls'
 
@@ -170,8 +187,8 @@ REST_FRAMEWORK = {
 # JWT
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=30),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': False,

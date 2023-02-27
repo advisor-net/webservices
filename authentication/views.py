@@ -1,15 +1,22 @@
-from rest_framework import status
-from rest_framework.permissions import AllowAny
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from authentication.models import User
+from rest_framework import serializers
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
 
 
-class TestView(APIView):
-    authentication_classes: list = []
-    permission_classes = (AllowAny,)
+class ProfileView(RetrieveAPIView):
+    class Serializer(serializers.ModelSerializer):
+        class Meta:
+            model = User
+            fields = (
+                'email',
+                'handle',
+                'date_joined',
+            )
 
-    def post(self, request: Request):
-        print('another value here...what about this ')
-        print('maybe this........')
-        return Response(data="yeah we made it", status=status.HTTP_200_OK)
+    permission_classes = (IsAuthenticated,)
+    serializer_class = Serializer
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return self.request.user
