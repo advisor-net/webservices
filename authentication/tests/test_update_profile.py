@@ -34,9 +34,20 @@ class TestUpdateHandle(BaseJWTAPITestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.handle, 'new_handle')
 
+    def test_cannot_update_handle_if_conflicts_with_existing(self):
+        EmptyUserFactory(handle='existing_handle')
+        url = reverse('update_handle')
+        response = self.client.patch(url, data=dict(handle='existing_handle'))
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
     def test_handle_is_valid(self):
-        # test that it is link safe
-        pass
+        url = reverse('check_handle')
+        response = self.client.post(url, data=dict(handle='Not identifier'))
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+        url = reverse('update_handle')
+        response = self.client.patch(url, data=dict(handle='Not identifier'))
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
 
 class TestUpdateProfile(BaseJWTAPITestCase):

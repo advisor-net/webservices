@@ -1,5 +1,6 @@
 from authentication.models import User
 from authentication.serializers import UserSerializer
+from authentication.validators import HandleValidator
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,12 +10,8 @@ from webservices.permissions import AdminOrUserHimself
 
 
 class CheckHandleView(CreateAPIView):
-    # ToDo: add validation on shape of handle (url safe?)
-    class Validator(serializers.Serializer):
-        handle = serializers.CharField(required=True, max_length=128)
-
     permission_classes = (IsAuthenticated,)
-    validator_class = Validator
+    validator_class = HandleValidator
 
     def post(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -28,20 +25,22 @@ class CheckHandleView(CreateAPIView):
 
 
 class UpdateHandleView(UpdateAPIView):
-    # ToDo: add validation on shape of handle (url safe?)
-    #  also add validation that the handle is available...
-    class Validator(serializers.Serializer):
-        handle = serializers.CharField(required=True, max_length=128)
-
     permission_classes = (IsAuthenticated,)
-    validator_class = Validator
+    validator_class = HandleValidator
     serializer_class = UserSerializer
 
     def get_object(self):
         return self.request.user
 
     def perform_update(self, validator):
-        validator.instance.handle = validator.validated_data['handle']
+        handle_value = validator.validated_data['handle']
+        if (
+            User.objects.exclude(email=validator.instance.email)
+            .filter(handle=handle_value)
+            .exists()
+        ):
+            raise serializers.ValidationError('A user with this handle already exists')
+        validator.instance.handle = handle_value
         validator.instance.save()
         return validator.instance
 
