@@ -16,3 +16,5 @@ Dockerfile
 
 # Pyhton tests coverage file
 .coverage
+
+.DS_Store
