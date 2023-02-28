@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from authentication.factories import (
     EmptyUserFactory,
     JobTitleFactory,
@@ -57,6 +59,26 @@ class TestUpdateProfile(BaseJWTAPITestCase):
             gender=User.GenderChoices.FEMALE.value,
             level=User.LevelChoices.IC_ASSOCIATE.value,
             current_pfm=User.CurrentPFMChoices.MINT.value,
+            inc_primary_annual=Decimal('110000'),
+            inc_primary_tax_fed=0.2,
+            inc_primary_tax_state=0.2,
+            inc_variable_monthly=Decimal('11000'),
+            inc_variable_tax_fed=0.2,
+            inc_variable_tax_state=0.2,
+            inc_secondary_monthly=Decimal('11000'),
+            inc_secondary_tax_fed=0.2,
+            inc_secondary_tax_state=0.2,
+            exp_housing=Decimal('1100'),
+            exp_other_fixed=Decimal('1100'),
+            exp_other_variable=Decimal('1100'),
+            sav_retirement=Decimal('1100'),
+            sav_market=Decimal('1100'),
+            assets_savings=Decimal('1100'),
+            assets_property=Decimal('1100'),
+            assets_misc=Decimal('1100'),
+            lia_loans=Decimal('1100'),
+            lia_credit_card=Decimal('1100'),
+            lia_misc=Decimal('1100'),
         )
         self.authenticate_with_generated_token(self.user)
         self.url = reverse('user_detail')
@@ -97,10 +119,73 @@ class TestUpdateProfile(BaseJWTAPITestCase):
         self.assertEqual(refreshed_user.assets_savings, old_user.assets_savings)
 
     def test_partial_update_income_statement(self):
-        pass
+        old_user = User.objects.get()
+        payload = dict(
+            inc_primary_annual='120000',
+            inc_primary_tax_fed=0.1,
+            inc_primary_tax_state=0.1,
+            inc_variable_monthly='10000',
+            inc_variable_tax_fed=0.1,
+            inc_variable_tax_state=0.1,
+            inc_secondary_monthly='10000',
+            inc_secondary_tax_fed=0.1,
+            inc_secondary_tax_state=0.1,
+            exp_housing='1000',
+            exp_other_fixed='1000',
+            exp_other_variable='1000',
+            sav_retirement='1000',
+            sav_market='1000',
+        )
+        response = self.client.patch(self.url, data=payload)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        refreshed_user = User.objects.get()
+        self.assertEqual(refreshed_user.inc_primary_annual, Decimal('120000'))
+        self.assertEqual(refreshed_user.inc_primary_tax_fed, 0.1)
+        self.assertEqual(refreshed_user.inc_primary_tax_state, 0.1)
+        self.assertEqual(refreshed_user.inc_variable_monthly, Decimal('10000'))
+        self.assertEqual(refreshed_user.inc_variable_tax_fed, 0.1)
+        self.assertEqual(refreshed_user.inc_variable_tax_state, 0.1)
+        self.assertEqual(refreshed_user.inc_secondary_monthly, Decimal('10000'))
+        self.assertEqual(refreshed_user.inc_secondary_tax_fed, 0.1)
+        self.assertEqual(refreshed_user.inc_secondary_tax_state, 0.1)
+        self.assertEqual(refreshed_user.exp_housing, Decimal('1000'))
+        self.assertEqual(refreshed_user.exp_other_fixed, Decimal('1000'))
+        self.assertEqual(refreshed_user.exp_other_variable, Decimal('1000'))
+        self.assertEqual(refreshed_user.sav_retirement, Decimal('1000'))
+        self.assertEqual(refreshed_user.sav_market, Decimal('1000'))
+        self.assertNotEqual(
+            refreshed_user.net_monthly_profit_loss, old_user.net_monthly_profit_loss
+        )
+        # ensure other fields were NOT updated
+        self.assertEqual(refreshed_user.handle, old_user.handle)
+        self.assertEqual(refreshed_user.gender, old_user.gender)
+        self.assertEqual(refreshed_user.assets_savings, old_user.assets_savings)
 
     def test_partial_update_net_worth(self):
-        pass
+        old_user = User.objects.get()
+        payload = dict(
+            assets_savings='100000',
+            assets_property='1000',
+            assets_misc='1000',
+            lia_loans='1000',
+            lia_credit_card='1000',
+            lia_misc='1000',
+        )
+        response = self.client.patch(self.url, data=payload)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        refreshed_user = User.objects.get()
+        self.assertEqual(refreshed_user.assets_savings, Decimal('100000'))
+        self.assertEqual(refreshed_user.assets_property, Decimal('1000'))
+        self.assertEqual(refreshed_user.assets_misc, Decimal('1000'))
+        self.assertEqual(refreshed_user.lia_loans, Decimal('1000'))
+        self.assertEqual(refreshed_user.lia_credit_card, Decimal('1000'))
+        self.assertEqual(refreshed_user.lia_misc, Decimal('1000'))
+        self.assertNotEqual(refreshed_user.assets_total, old_user.assets_total)
+        self.assertNotEqual(refreshed_user.net_worth, old_user.net_worth)
+        # ensure other fields were NOT updated
+        self.assertEqual(refreshed_user.handle, old_user.handle)
+        self.assertEqual(refreshed_user.gender, old_user.gender)
+        self.assertEqual(refreshed_user.inc_primary_annual, old_user.inc_primary_annual)
 
     def test_bad_fields(self):
         payload = dict(age='dfvfdvfsd')
