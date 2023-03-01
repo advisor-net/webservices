@@ -116,9 +116,15 @@ class TestListUsers(BaseJWTAPITestCase):
         data = response.data
         self.assertEqual(1, len(data['results']))
 
-    def assertNumericFieldFiltersWork(self, field_name, low_value, high_value):
+    def assertNumericFieldFiltersWork(
+        self, field_name, low_value, high_value, computed=False
+    ):
         u1 = UserFactory(**{field_name: low_value})
         u2 = UserFactory(**{field_name: high_value})
+        if computed:
+            # need to circumvent the auto recompute behavior on save
+            User.objects.filter(id=u1.id).update(**{field_name: low_value})
+            User.objects.filter(id=u2.id).update(**{field_name: high_value})
         response = self.client.get(self.url, data={f'{field_name}__lt': high_value})
         self.assertEqual(1, len(response.data['results']))
         response = self.client.get(self.url, data={f'{field_name}__lte': high_value})
@@ -173,11 +179,15 @@ class TestListUsers(BaseJWTAPITestCase):
         )
 
     def test_list_filters_computed_fields(self):
-        self.assertNumericFieldFiltersWork('inc_total_annual', 10000, 20000)
-        self.assertNumericFieldFiltersWork('net_monthly_profit_loss', -500, 500)
-        self.assertNumericFieldFiltersWork('assets_total', 10000, 20000)
-        self.assertNumericFieldFiltersWork('lia_total', 10000, 20000)
-        self.assertNumericFieldFiltersWork('net_worth', 100000, 200000)
+        self.assertNumericFieldFiltersWork(
+            'inc_total_annual', 10000, 20000, computed=True
+        )
+        self.assertNumericFieldFiltersWork(
+            'net_monthly_profit_loss', -500, 500, computed=True
+        )
+        self.assertNumericFieldFiltersWork('assets_total', 10000, 20000, computed=True)
+        self.assertNumericFieldFiltersWork('lia_total', 10000, 20000, computed=True)
+        self.assertNumericFieldFiltersWork('net_worth', 100000, 200000, computed=True)
 
     def test_list_filters_fk_fields(self):
         self.assertFkInFilterWorks(

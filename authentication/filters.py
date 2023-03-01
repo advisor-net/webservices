@@ -2,7 +2,6 @@ from authentication.models import User
 from django_filters import rest_framework as filters
 
 
-# TODO: range filtering
 class UserFilter(filters.FilterSet):
     age = filters.NumberFilter(field_name='age')
     age__lt = filters.NumberFilter(field_name='age', lookup_expr='lt')
