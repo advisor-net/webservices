@@ -1,5 +1,6 @@
 from decimal import Decimal
 from typing import List, Optional
+from uuid import uuid4
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -51,6 +52,9 @@ class User(AbstractUser, SoftDeleteModelMixin):
         SPLITWISE = 'splitwise', 'Splitwise'
         PEN_PAPER = 'pen paper', 'Pen & paper'
         NONE = 'none', 'None'
+
+    # for profile urls
+    uuid = models.UUIDField(default=uuid4, editable=False, null=False)
 
     # profile setup
     handle: Optional[str] = models.CharField(
