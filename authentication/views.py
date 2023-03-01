@@ -10,8 +10,10 @@ from webservices.permissions import AdminOrUserHimself
 
 
 class CheckHandleView(CreateAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, AdminOrUserHimself)
     validator_class = HandleValidator
+    queryset = User.objects.all()
+    lookup_field = 'uuid'
 
     def post(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -25,12 +27,11 @@ class CheckHandleView(CreateAPIView):
 
 
 class UpdateHandleView(UpdateAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, AdminOrUserHimself)
     validator_class = HandleValidator
     serializer_class = UserSerializer
-
-    def get_object(self):
-        return self.request.user
+    queryset = User.objects.all()
+    lookup_field = 'uuid'
 
     def perform_update(self, validator):
         handle_value = validator.validated_data['handle']
@@ -47,13 +48,11 @@ class UpdateHandleView(UpdateAPIView):
 
 class UserDetailsView(UpdateAPIView, RetrieveAPIView):
     permission_classes = (IsAuthenticated, AdminOrUserHimself)
-    # ToDo: add better validation...only accept the non computed fields and set up a
-    #  separate validator
+    # ToDo: create dedicated validator
     validator_class = UserSerializer
     serializer_class = UserSerializer
-
-    def get_object(self):
-        return self.request.user
+    queryset = User.objects.all()
+    lookup_field = 'uuid'
 
     def perform_update(self, validator):
         return validator.save()

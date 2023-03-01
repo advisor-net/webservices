@@ -19,7 +19,7 @@ class TestUpdateHandle(BaseJWTAPITestCase):
         self.authenticate_with_generated_token(self.user)
 
     def test_check_handle_availability(self):
-        url = reverse('check_handle')
+        url = reverse('check_handle', kwargs=dict(uuid=str(self.user.uuid)))
         response = self.client.post(url, data=dict(handle='player1'))
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertTrue(response.data['available'])
@@ -30,7 +30,7 @@ class TestUpdateHandle(BaseJWTAPITestCase):
         self.assertFalse(response.data['available'])
 
     def test_update_handle(self):
-        url = reverse('update_handle')
+        url = reverse('update_handle', kwargs=dict(uuid=str(self.user.uuid)))
         response = self.client.patch(url, data=dict(handle='new_handle'))
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.user.refresh_from_db()
@@ -38,16 +38,16 @@ class TestUpdateHandle(BaseJWTAPITestCase):
 
     def test_cannot_update_handle_if_conflicts_with_existing(self):
         EmptyUserFactory(handle='existing_handle')
-        url = reverse('update_handle')
+        url = reverse('update_handle', kwargs=dict(uuid=str(self.user.uuid)))
         response = self.client.patch(url, data=dict(handle='existing_handle'))
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
     def test_handle_is_valid(self):
-        url = reverse('check_handle')
+        url = reverse('check_handle', kwargs=dict(uuid=str(self.user.uuid)))
         response = self.client.post(url, data=dict(handle='Not identifier'))
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
-        url = reverse('update_handle')
+        url = reverse('update_handle', kwargs=dict(uuid=str(self.user.uuid)))
         response = self.client.patch(url, data=dict(handle='Not identifier'))
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
@@ -81,7 +81,7 @@ class TestUpdateProfile(BaseJWTAPITestCase):
             lia_misc=Decimal('1100'),
         )
         self.authenticate_with_generated_token(self.user)
-        self.url = reverse('user_detail')
+        self.url = reverse('user_detail', kwargs=dict(uuid=str(self.user.uuid)))
 
     def test_get_details(self):
         response = self.client.get(self.url)

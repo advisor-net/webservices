@@ -13,4 +13,12 @@ class UserSerializer(serializers.ModelSerializer):
             'user_permissions',
             'deleted_at',
         ]
-        read_only_fields = ['id', 'handle']
+        read_only_fields = [
+            'id',
+            'uuid',
+            'handle',
+            'inc_total_annual',
+            'net_monthly_profit_loss',
+            'lia_total',
+            'net_worth',
+        ]

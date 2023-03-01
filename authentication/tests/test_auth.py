@@ -20,13 +20,13 @@ class TestJWTAuth(BaseJWTAPITestCase):
         )
 
     def test_cannot_access_without_jwt_token(self):
-        url = reverse('user_profile')
+        url = reverse('user_detail', kwargs=dict(uuid=str(self.user.uuid)))
         response = self.client.get(path=url)
         self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
 
     def test_direct_jwt_authentication(self):
         self.authenticate_with_generated_token(self.user)
-        url = reverse('user_profile')
+        url = reverse('user_detail', kwargs=dict(uuid=str(self.user.uuid)))
         response = self.client.get(path=url)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 

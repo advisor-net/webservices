@@ -24,8 +24,16 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/user/check_handle/', CheckHandleView.as_view(), name='check_handle'),
-    path('api/user/update_handle/', UpdateHandleView.as_view(), name='update_handle'),
-    path('api/user/profile/', UserDetailsView.as_view(), name='user_detail'),
+    path(
+        'api/user/check_handle/<str:uuid>/',
+        CheckHandleView.as_view(),
+        name='check_handle',
+    ),
+    path(
+        'api/user/update_handle/<str:uuid>/',
+        UpdateHandleView.as_view(),
+        name='update_handle',
+    ),
+    path('api/user/profile/<str:uuid>/', UserDetailsView.as_view(), name='user_detail'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/#serving-files-uploaded-by-a-user-during-development
