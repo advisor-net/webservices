@@ -13,7 +13,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from authentication.views import CheckHandleView, UpdateHandleView, UserDetailsView
+from authentication.views import (
+    CheckHandleView,
+    UpdateHandleView,
+    UserDetailsView,
+    UserListView,
+)
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -35,5 +40,6 @@ urlpatterns = [
         name='update_handle',
     ),
     path('api/user/profile/<str:uuid>/', UserDetailsView.as_view(), name='user_detail'),
+    path('api/users/', UserListView.as_view(), name='user_list'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/#serving-files-uploaded-by-a-user-during-development

@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     # TODO
     # 'django_celery_beat',
     'django_celery_results',
+    'django_filters',
 ]
 MY_APPS = ['authentication']
 INSTALLED_APPS += MY_APPS
@@ -181,7 +182,9 @@ CACHES = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_PAGINATION_CLASS': 'webservices.paginators.StandardPageNumberPagination',
 }
 
 # JWT

@@ -88,6 +88,13 @@ class TestUpdateProfile(BaseJWTAPITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(self.user.email, response.data['email'])
 
+    def test_another_user_cannot_patch(self):
+        other_user = UserFactory()
+        self.authenticate_with_generated_token(other_user)
+        self.url = reverse('user_detail', kwargs=dict(uuid=str(self.user.uuid)))
+        response = self.client.patch(self.url, data=dict(age=25))
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
     def test_partial_update_profile_info(self):
         old_user = User.objects.get()
         new_metro = MetropolitanAreaFactory()

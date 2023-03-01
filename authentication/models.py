@@ -23,6 +23,11 @@ class JobTitle(TimeStampedModel):
     name: str = models.CharField(max_length=128, blank=False, null=False, unique=False)
 
 
+class UserQuerySet(models.QuerySet):
+    def with_related_objects_selected(self):
+        return self.select_related('metro', 'industry', 'job_title')
+
+
 class User(AbstractUser, SoftDeleteModelMixin):
     class GenderChoices(models.TextChoices):
         MALE = 'male', 'Male'
@@ -123,6 +128,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
     net_monthly_profit_loss: Optional[Decimal] = models.DecimalField(
         default=None, max_digits=12, decimal_places=2, null=True, db_index=True
     )
+    # TODO: add total expenses, total savings
 
     # net worth
     # assets
@@ -155,6 +161,8 @@ class User(AbstractUser, SoftDeleteModelMixin):
     net_worth: Optional[Decimal] = models.DecimalField(
         default=None, max_digits=14, decimal_places=2, null=True, db_index=True
     )
+
+    objects = UserQuerySet.as_manager()
 
     class Meta:
         db_table = 'users'
