@@ -18,8 +18,6 @@ from urllib.parse import urlparse
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
-from celery.schedules import crontab
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -84,7 +82,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_celery_beat',
+    # TODO
+    # 'django_celery_beat',
     'django_celery_results',
 ]
 MY_APPS = ['authentication']
@@ -217,36 +216,35 @@ SIMPLE_JWT = {
 # authentication
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
-# RABBITMQ
-RABBITMQ_USER = get_secret('RABBITMQ_USER')
-RABBITMQ_PASSWORD = get_secret('RABBITMQ_PWD')
-RABBITMQ_HOST = get_secret('RABBITMQ_HOST')
-RABBITMQ_PORT = get_secret('RABBITMQ_PORT')
+# AWS
+AWS_ACCESS_KEY_ID = get_secret('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = get_secret('AWS_SECRET_ACCESS_KEY')
 
 # CELERY
 # https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#configuration
-CELERY_BROKER_URL = 'amqp://{user}:{pwd}@{rabbitmq_host}:{rabbitmq_port}/%2F'.format(
-    user=RABBITMQ_USER,
-    pwd=RABBITMQ_PASSWORD,
-    rabbitmq_host=RABBITMQ_HOST,
-    rabbitmq_port=RABBITMQ_PORT,
-)
+CELERY_BROKER_URL = f'sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@'
+# NOTE: this will automatically create queues unique to an environment i.e. dev-celery, production-celery
+#  there is no need to create these manually in SQS, celery will create them automatically
+CELERY_BROKER_TRANSPORT_OPTIONS = {"queue_name_prefix": f"{ENVIRONMENT}-"}
+CELERY_TASK_DEFAULT_QUEUE = 'celery'
 CELERY_TIMEZONE = 'US/Eastern'
 CELERY_TASK_ACKS_LATE = True
 # https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html#django-celery-results
+# SQS does not work as a result backend, so we will use the redis cache as the backend
+# TODO: do we need this? seeing this on startup: results:     disabled://
 CELERY_CACHE_BACKEND = 'default'
 CELERY_TASK_ROUTES: dict = {}
-CELERY_BEAT_SCHEDULE = {
-    'nightly-db-activity-reset': {
-        'task': 'etl.tasks.rebuild_database',
-        'schedule': crontab(minute=0, hour=3),
-    }
-}
 CELERY_QUEUE_MAX_PRIORITY = 10
 CELERY_TASK_TIME_LIMIT = 60 * 30  # 30 minutes
 # NOTE: this will be overriden for ease of testing
 CELERY_TASK_ALWAYS_EAGER = False
+
+# TODO
+#  use this for weekly digests, daily summaries for dashboards, etc.
+# TASK SCHEDULER
+# add this to requirements: django-celery-beat==2.4.0
+# CELERY_BEAT_SCHEDULE = {}
 
 
 # Internationalization
