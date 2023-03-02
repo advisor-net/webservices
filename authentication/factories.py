@@ -1,4 +1,5 @@
 import random
+import string
 from decimal import Decimal
 
 import factory
@@ -74,7 +75,12 @@ class EmptyUserFactory(factory.django.DjangoModelFactory):
         model = User
         django_get_or_create = ('email',)
 
-    email = factory.Faker('email')
+    email = factory.lazy_attribute(
+        lambda u: ''.join(
+            random.choice(string.ascii_letters + string.digits) for _ in range(12)
+        )
+        + f'@{fake.free_email_domain()}'
+    )
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
     password = factory.Faker(

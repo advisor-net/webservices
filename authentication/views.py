@@ -78,6 +78,7 @@ class UserDetailsView(UpdateAPIView, RetrieveAPIView):
         return validator.save()
 
 
+# TODO: provide averages for major list metrics
 class UserListView(ListAPIView):
     permission_classes = (IsAuthenticated,)
     # ToDo: come up with a more lightweight serializer?

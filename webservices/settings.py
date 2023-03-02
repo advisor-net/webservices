@@ -55,7 +55,8 @@ SECRET_KEY = get_secret('SECRET_KEY')
 ENVIRONMENT = get_secret('ENV')
 ENV_DEV = 'dev'
 ENV_PROD = 'production'
-IS_DEV = ENVIRONMENT == ENV_DEV
+ENV_LOCAL = 'local'
+IS_LOCAL = ENVIRONMENT == ENV_LOCAL
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = get_bool_secret('DEBUG')
