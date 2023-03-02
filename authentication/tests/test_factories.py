@@ -3,7 +3,7 @@ from authentication.models import User
 from django.test import TestCase
 
 
-class FactoryTestCase(TestCase):
+class TestFactoriesTestCase(TestCase):
     def test_user_factory(self):
         UserFactory()
         user = User.objects.get()

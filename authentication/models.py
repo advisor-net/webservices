@@ -3,6 +3,7 @@ from typing import List, Optional
 from uuid import uuid4
 
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import UserManager as BaseUserManager
 from django.db import models
 
 from webservices.models import SoftDeleteModelMixin, TimeStampedModel
@@ -26,6 +27,11 @@ class JobTitle(TimeStampedModel):
 class UserQuerySet(models.QuerySet):
     def with_related_objects_selected(self):
         return self.select_related('metro', 'industry', 'job_title')
+
+
+class UserManager(BaseUserManager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db)
 
 
 class User(AbstractUser, SoftDeleteModelMixin):
@@ -162,7 +168,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
         default=None, max_digits=14, decimal_places=2, null=True, db_index=True
     )
 
-    objects = UserQuerySet.as_manager()
+    objects = UserManager()
 
     class Meta:
         db_table = 'users'
