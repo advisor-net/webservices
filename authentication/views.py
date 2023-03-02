@@ -1,9 +1,15 @@
 from authentication.filters import UserFilter
-from authentication.models import User
-from authentication.serializers import UserSerializer
+from authentication.models import Industry, JobTitle, MetropolitanArea, User
+from authentication.serializers import (
+    IndustrySerializer,
+    JobTitleSerializer,
+    MetropolitanAreaSerializer,
+    UserSerializer,
+)
 from authentication.validators import HandleValidator, UpdateUserValidator
 from django_filters import rest_framework as filters
 from rest_framework import serializers, status
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -88,17 +94,36 @@ class UserListView(ListAPIView):
         )
 
 
-# TODO: maybe simplify these search filters later instead of needing to use smart components
-#  need to think about initialization and how it renders...will need to get fancy with the display
-#  and stuff like that
-# TODO: search
-class MetropolitanAreaSearch(RetrieveAPIView):
-    pass
+class MetropolitanAreaSearch(ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = MetropolitanAreaSerializer
+    queryset = MetropolitanArea.objects.all().order_by('name')
+    pagination_class = StandardPageNumberPagination
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
 
 
-class IndustrySearch(RetrieveAPIView):
-    pass
+class IndustrySearch(ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = IndustrySerializer
+    queryset = Industry.objects.all().order_by('name')
+    pagination_class = StandardPageNumberPagination
+    filter_backends = [SearchFilter]
+    ordering = ['name']
+    search_fields = ['name']
 
 
-class JobTitleSearch(RetrieveAPIView):
-    pass
+class JobTitleSearch(ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = JobTitleSerializer
+    queryset = JobTitle.objects.all().order_by('name')
+    pagination_class = StandardPageNumberPagination
+    filter_backends = [SearchFilter]
+    ordering = ['name']
+    search_fields = ['name']
+
+    def get_queryset(self):
+        industry_filter = self.request.query_params.get('industry', None)
+        if industry_filter:
+            return super().get_queryset().filter(industry__name=industry_filter)
+        return super().get_queryset()

@@ -15,6 +15,9 @@ Including another URLconf
 """
 from authentication.views import (
     CheckHandleView,
+    IndustrySearch,
+    JobTitleSearch,
+    MetropolitanAreaSearch,
     UpdateHandleView,
     UserDetailsView,
     UserListView,
@@ -41,5 +44,8 @@ urlpatterns = [
     ),
     path('api/user/profile/<str:uuid>/', UserDetailsView.as_view(), name='user_detail'),
     path('api/users/', UserListView.as_view(), name='user_list'),
+    path('api/metros/', MetropolitanAreaSearch.as_view(), name='metro_list'),
+    path('api/industries/', IndustrySearch.as_view(), name='industry_list'),
+    path('api/job_titles/', JobTitleSearch.as_view(), name='job_title_list'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/#serving-files-uploaded-by-a-user-during-development

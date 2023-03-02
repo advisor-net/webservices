@@ -5,19 +5,19 @@ from rest_framework import serializers
 class MetropolitanAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = MetropolitanArea
-        exclude = []
+        fields = ['id', 'name']
 
 
 class IndustrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Industry
-        exclude = []
+        fields = ['id', 'name']
 
 
 class JobTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobTitle
-        exclude = ['industry']
+        fields = ['id', 'name']
 
 
 class UserSerializer(serializers.ModelSerializer):
