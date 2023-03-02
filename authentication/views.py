@@ -4,6 +4,7 @@ from authentication.serializers import (
     IndustrySerializer,
     JobTitleSerializer,
     MetropolitanAreaSerializer,
+    ProfileSerializer,
     UserSerializer,
 )
 from authentication.validators import HandleValidator, UpdateUserValidator
@@ -21,6 +22,15 @@ from webservices.api.views import (
 )
 from webservices.paginators import StandardPageNumberPagination
 from webservices.permissions import AdminOrUserSelf, MethodSpecificPermission
+
+
+class ProfileView(RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ProfileSerializer
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return self.request.user
 
 
 class CheckHandleView(CreateAPIView):

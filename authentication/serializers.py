@@ -44,3 +44,9 @@ class UserSerializer(serializers.ModelSerializer):
             'lia_total',
             'net_worth',
         ]
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['uuid', 'id', 'email']
