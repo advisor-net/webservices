@@ -47,6 +47,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    metro = MetropolitanAreaSerializer()
+
     class Meta:
         model = User
-        fields = ['uuid', 'id', 'email']
+        fields = ['uuid', 'id', 'email', 'metro']

@@ -27,7 +27,7 @@ from webservices.permissions import AdminOrUserSelf, MethodSpecificPermission
 class ProfileView(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProfileSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.all().select_related('metro')
 
     def get_object(self):
         return self.request.user
@@ -89,6 +89,8 @@ class UserDetailsView(UpdateAPIView, RetrieveAPIView):
 
 
 # TODO: provide averages for major list metrics
+# TODO: fix string lookups when there is a comma in them
+#  for now, we are just going to search using the FK id
 class UserListView(ListAPIView):
     permission_classes = (IsAuthenticated,)
     # ToDo: come up with a more lightweight serializer?
@@ -103,6 +105,10 @@ class UserListView(ListAPIView):
         return (
             super().get_queryset().exclude(id=self.request.user.id).order_by(order_by)
         )
+
+    def list(self, request, *args, **kwargs):
+        print(request.query_params)
+        return super().list(request, *args, **kwargs)
 
 
 class MetropolitanAreaSearch(ListAPIView):

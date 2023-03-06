@@ -64,12 +64,12 @@ def build_simulated_dataset(users_per_metro=1000):
     for metro in metros:
         for i in range(users_per_metro):
             job_title = random.choice(job_titles)
-            users.append(
-                UserFactory.build(
-                    metro=metro,
-                    job_title=job_title,
-                    industry=job_title.industry,
-                )
+            u = UserFactory.build(
+                metro=metro,
+                job_title=job_title,
+                industry=job_title.industry,
             )
+            u.recompute_fields()
+            users.append(u)
     User.objects.bulk_create(users, batch_size=1000)
     print(f'Simulation building time: {round(time.time() - t1, 2)} seconds')

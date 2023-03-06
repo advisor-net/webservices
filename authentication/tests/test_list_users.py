@@ -149,18 +149,18 @@ class TestListUsers(BaseJWTAPITestCase):
         User.objects.filter(id__in=[u1.id, u2.id]).delete()
 
     def assertFkInFilterWorks(
-        self, filter_name, fk_name, fk_search_field_name, factory_class, value1, value2
+        self, filter_name, fk_name, factory_class, value1, value2
     ):
-        f1 = factory_class(**{fk_search_field_name: value1})
-        f2 = factory_class(**{fk_search_field_name: value2})
+        f1 = factory_class(name=value1)
+        f2 = factory_class(name=value2)
         u1 = UserFactory(**{fk_name: f1})
         u2 = UserFactory(**{fk_name: f2})
-        response = self.client.get(self.url, data={f'{filter_name}__in': value1})
+        response = self.client.get(self.url, data={f'{filter_name}__in': f1.id})
         self.assertEqual(1, len(response.data['results']))
-        response = self.client.get(self.url, data={f'{filter_name}__in': value2})
+        response = self.client.get(self.url, data={f'{filter_name}__in': f2.id})
         self.assertEqual(1, len(response.data['results']))
         response = self.client.get(
-            self.url, data={f'{filter_name}__in': ','.join([str(value1), str(value2)])}
+            self.url, data={f'{filter_name}__in': ','.join([str(f1.id), str(f2.id)])}
         )
         self.assertEqual(2, len(response.data['results']))
         User.objects.filter(id__in=[u1.id, u2.id]).delete()
@@ -193,7 +193,6 @@ class TestListUsers(BaseJWTAPITestCase):
         self.assertFkInFilterWorks(
             'metro',
             'metro',
-            'name',
             MetropolitanAreaFactory,
             'Boston',
             'New York',
@@ -201,7 +200,6 @@ class TestListUsers(BaseJWTAPITestCase):
         self.assertFkInFilterWorks(
             'industry',
             'industry',
-            'name',
             IndustryFactory,
             'Finance',
             'Tech',
@@ -209,7 +207,6 @@ class TestListUsers(BaseJWTAPITestCase):
         self.assertFkInFilterWorks(
             'job_title',
             'job_title',
-            'name',
             JobTitleFactory,
             'Janitor',
             'Zamboni Driver',
