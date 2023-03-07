@@ -1,4 +1,9 @@
-from authentication.filters import UserFilter
+from authentication.filters import (
+    IndustryFilter,
+    JobTitleFilter,
+    MetropolitanAreaFilter,
+    UserFilter,
+)
 from authentication.models import Industry, JobTitle, MetropolitanArea, User
 from authentication.serializers import (
     IndustrySerializer,
@@ -112,8 +117,9 @@ class MetropolitanAreaSearch(ListAPIView):
     serializer_class = MetropolitanAreaSerializer
     queryset = MetropolitanArea.objects.all().order_by('name')
     pagination_class = StandardPageNumberPagination
-    filter_backends = [SearchFilter]
+    filter_backends = [SearchFilter, filters.DjangoFilterBackend]
     search_fields = ['name']
+    filterset_class = MetropolitanAreaFilter
 
 
 class IndustrySearch(ListAPIView):
@@ -121,9 +127,9 @@ class IndustrySearch(ListAPIView):
     serializer_class = IndustrySerializer
     queryset = Industry.objects.all().order_by('name')
     pagination_class = StandardPageNumberPagination
-    filter_backends = [SearchFilter]
-    ordering = ['name']
+    filter_backends = [SearchFilter, filters.DjangoFilterBackend]
     search_fields = ['name']
+    filterset_class = IndustryFilter
 
 
 class JobTitleSearch(ListAPIView):
@@ -131,6 +137,6 @@ class JobTitleSearch(ListAPIView):
     serializer_class = JobTitleSerializer
     queryset = JobTitle.objects.all().order_by('name')
     pagination_class = StandardPageNumberPagination
-    filter_backends = [SearchFilter]
-    ordering = ['name']
+    filter_backends = [SearchFilter, filters.DjangoFilterBackend]
     search_fields = ['name']
+    filterset_class = JobTitleFilter

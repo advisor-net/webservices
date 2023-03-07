@@ -1,4 +1,4 @@
-from authentication.models import User
+from authentication.models import Industry, JobTitle, MetropolitanArea, User
 from django_filters import rest_framework as filters
 
 
@@ -119,3 +119,27 @@ class UserFilter(filters.FilterSet):
             'lia_total',
             'net_worth',
         ]
+
+
+class MetropolitanAreaFilter(filters.FilterSet):
+    id__in = filters.BaseInFilter(field_name='id')
+
+    class Meta:
+        model = MetropolitanArea
+        fields = ['id']
+
+
+class IndustryFilter(filters.FilterSet):
+    id__in = filters.BaseInFilter(field_name='id')
+
+    class Meta:
+        model = Industry
+        fields = ['id']
+
+
+class JobTitleFilter(filters.FilterSet):
+    id__in = filters.BaseInFilter(field_name='id')
+
+    class Meta:
+        model = JobTitle
+        fields = ['id']

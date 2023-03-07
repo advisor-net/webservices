@@ -38,6 +38,18 @@ class TestListMetropolitanAreas(BaseJWTAPITestCase):
         data = response.data
         self.assertEqual(1, len(data['results']))
 
+    def test_list_from_id_values(self):
+        m1 = MetropolitanArea.objects.get(name='Tech1')
+        m2 = MetropolitanArea.objects.get(name='Tech2')
+        response = self.client.get(
+            self.url, data=dict(id__in=','.join([str(m1.id), str(m2.id)]))
+        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        data = response.data
+        self.assertEqual(2, len(data['results']))
+        self.assertEqual(data['results'][0]['name'], m1.name)
+        self.assertEqual(data['results'][1]['name'], m2.name)
+
 
 class TestListIndustries(BaseJWTAPITestCase):
     def setUp(self):
@@ -66,6 +78,18 @@ class TestListIndustries(BaseJWTAPITestCase):
         data = response.data
         self.assertEqual(1, len(data['results']))
 
+    def test_list_from_id_values(self):
+        m1 = Industry.objects.get(name='Tech1')
+        m2 = Industry.objects.get(name='Tech2')
+        response = self.client.get(
+            self.url, data=dict(id__in=','.join([str(m1.id), str(m2.id)]))
+        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        data = response.data
+        self.assertEqual(2, len(data['results']))
+        self.assertEqual(data['results'][0]['name'], m1.name)
+        self.assertEqual(data['results'][1]['name'], m2.name)
+
 
 class TestListJobTitles(BaseJWTAPITestCase):
     def setUp(self):
@@ -93,3 +117,15 @@ class TestListJobTitles(BaseJWTAPITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         data = response.data
         self.assertEqual(1, len(data['results']))
+
+    def test_list_from_id_values(self):
+        m1 = JobTitle.objects.get(name='Manager1')
+        m2 = JobTitle.objects.get(name='Manager2')
+        response = self.client.get(
+            self.url, data=dict(id__in=','.join([str(m1.id), str(m2.id)]))
+        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        data = response.data
+        self.assertEqual(2, len(data['results']))
+        self.assertEqual(data['results'][0]['name'], m1.name)
+        self.assertEqual(data['results'][1]['name'], m2.name)
