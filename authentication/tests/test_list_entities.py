@@ -73,14 +73,8 @@ class TestListJobTitles(BaseJWTAPITestCase):
         self.authenticate_with_generated_token(self.user)
         self.url = reverse('job_title_list')
         to_create = []
-        self.ind1 = IndustryFactory(name='Tech')
-        ind2 = IndustryFactory(name='Manufacturing')
         for i in range(25):
-            if i % 2 == 0:
-                ind = self.ind1
-            else:
-                ind = ind2
-            to_create.append(JobTitleFactory.build(name=f'Manager{i}', industry=ind))
+            to_create.append(JobTitleFactory.build(name=f'Manager{i}'))
         JobTitle.objects.bulk_create(to_create)
 
     def test_list_industries_pagination(self):
@@ -93,12 +87,6 @@ class TestListJobTitles(BaseJWTAPITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         data = response.data
         self.assertEqual(26, len(data['results']))
-
-    def test_industry_filter(self):
-        response = self.client.get(self.url, data=dict(industry=self.ind1.name))
-        self.assertEqual(status.HTTP_200_OK, response.status_code)
-        data = response.data
-        self.assertEqual(13, len(data['results']))
 
     def test_search(self):
         response = self.client.get(self.url, data=dict(search='24'))

@@ -55,7 +55,7 @@ class IndustryFactory(factory.django.DjangoModelFactory):
 class JobTitleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = JobTitle
-        django_get_or_create = ('name', 'industry')
+        django_get_or_create = ('name',)
 
     name = factory.Faker(
         'random_element',
@@ -67,7 +67,6 @@ class JobTitleFactory(factory.django.DjangoModelFactory):
             "Associate",
         ],
     )
-    industry = factory.SubFactory(IndustryFactory)
 
 
 class EmptyUserFactory(factory.django.DjangoModelFactory):
@@ -100,6 +99,7 @@ class UserFactory(EmptyUserFactory):
     age = factory.Faker('random_int', min=21, max=70)
     gender = factory.Faker('random_element', elements=User.GenderChoices.values)
     metro = factory.SubFactory(MetropolitanAreaFactory)
+    job_title = factory.SubFactory(JobTitleFactory)
     industry = factory.SubFactory(IndustryFactory)
     level = factory.Faker('random_element', elements=User.LevelChoices.values)
     current_pfm = factory.Faker(
@@ -150,8 +150,3 @@ class UserFactory(EmptyUserFactory):
     lia_credit_card = factory.LazyAttribute(lambda u: random.randint(0, 10) * 1000)
     lia_misc = factory.LazyAttribute(lambda u: random.randint(0, 10) * 1000)
     # computed fields updated in the on save method
-
-    @factory.lazy_attribute
-    def job_title(self):
-        if self.industry:
-            return JobTitleFactory(industry=self.industry)

@@ -40,16 +40,16 @@ def build_entities():
     MetropolitanArea.objects.bulk_create(metros)
 
     industries = []
-    job_titles = []
     for industry_name in INDUSTRIES:
-        industry = Industry(name=industry_name)
-        industries.append(industry)
-        for title in JOB_TITLES:
-            job_titles.append(JobTitle(name=title, industry=industry))
+        industries.append(Industry(name=industry_name))
     Industry.objects.bulk_create(industries)
+
+    job_titles = []
+    for title in JOB_TITLES:
+        job_titles.append(JobTitle(name=title))
     JobTitle.objects.bulk_create(job_titles)
 
-    return metros, job_titles
+    return metros, industries, job_titles
 
 
 # TODO: come back and make this actually realistic
@@ -58,16 +58,15 @@ def build_entities():
 def build_simulated_dataset(users_per_metro=1000):
     t1 = time.time()
     wipe_database()
-    metros, job_titles = build_entities()
+    metros, indutries, job_titles = build_entities()
 
     users = []
     for metro in metros:
         for i in range(users_per_metro):
-            job_title = random.choice(job_titles)
             u = UserFactory.build(
                 metro=metro,
-                job_title=job_title,
-                industry=job_title.industry,
+                job_title=random.choice(job_titles),
+                industry=random.choice(indutries),
             )
             u.recompute_fields()
             users.append(u)

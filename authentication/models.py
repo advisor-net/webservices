@@ -18,10 +18,7 @@ class Industry(TimeStampedModel):
 
 
 class JobTitle(TimeStampedModel):
-    industry: Industry = models.ForeignKey(
-        to=Industry, null=False, related_name='job_titles', on_delete=models.PROTECT
-    )
-    name: str = models.CharField(max_length=128, blank=False, null=False, unique=False)
+    name: str = models.CharField(max_length=128, blank=False, null=False, unique=True)
 
 
 class UserQuerySet(models.QuerySet):

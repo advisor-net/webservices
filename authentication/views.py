@@ -106,10 +106,6 @@ class UserListView(ListAPIView):
             super().get_queryset().exclude(id=self.request.user.id).order_by(order_by)
         )
 
-    def list(self, request, *args, **kwargs):
-        print(request.query_params)
-        return super().list(request, *args, **kwargs)
-
 
 class MetropolitanAreaSearch(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -138,9 +134,3 @@ class JobTitleSearch(ListAPIView):
     filter_backends = [SearchFilter]
     ordering = ['name']
     search_fields = ['name']
-
-    def get_queryset(self):
-        industry_filter = self.request.query_params.get('industry', None)
-        if industry_filter:
-            return super().get_queryset().filter(industry__name=industry_filter)
-        return super().get_queryset()

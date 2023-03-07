@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from authentication.factories import (
     EmptyUserFactory,
+    IndustryFactory,
     JobTitleFactory,
     MetropolitanAreaFactory,
     UserFactory,
@@ -98,12 +99,13 @@ class TestUpdateProfile(BaseJWTAPITestCase):
     def test_partial_update_profile_info(self):
         old_user = User.objects.get()
         new_metro = MetropolitanAreaFactory()
+        new_industry = IndustryFactory()
         new_job = JobTitleFactory()
         payload = dict(
             age=25,
             gender=User.GenderChoices.MALE.value,
             metro=new_metro.id,
-            industry=new_job.industry.id,
+            industry=new_industry.id,
             job_title=new_job.id,
             level=User.LevelChoices.IC.value,
             current_pfm=User.CurrentPFMChoices.PEN_PAPER.value,
@@ -114,7 +116,7 @@ class TestUpdateProfile(BaseJWTAPITestCase):
         self.assertEqual(refreshed_user.age, 25)
         self.assertEqual(refreshed_user.gender, User.GenderChoices.MALE.value)
         self.assertEqual(refreshed_user.metro, new_metro)
-        self.assertEqual(refreshed_user.industry, new_job.industry)
+        self.assertEqual(refreshed_user.industry, new_industry)
         self.assertEqual(refreshed_user.job_title, new_job)
         self.assertEqual(refreshed_user.level, User.LevelChoices.IC.value)
         self.assertEqual(
