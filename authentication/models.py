@@ -303,6 +303,72 @@ class User(AbstractUser, SoftDeleteModelMixin):
             update_fields.append('net_worth')
         return update_fields
 
+    @property
+    def inc_primary_monthly_net(self) -> Optional[Decimal]:
+        if (
+            self.inc_primary_annual is not None
+            and self.inc_primary_tax_fed is not None
+            and self.inc_primary_tax_state is not None
+        ):
+            return self.inc_primary_annual * Decimal(
+                (1 - (self.inc_primary_tax_fed + self.inc_primary_tax_state) / 100) / 12
+            )
+
+    @property
+    def inc_variable_monthly_net(self) -> Optional[Decimal]:
+        if (
+            self.inc_variable_monthly is not None
+            and self.inc_variable_tax_fed is not None
+            and self.inc_variable_tax_state is not None
+        ):
+            return self.inc_variable_monthly * Decimal(
+                1 - (self.inc_variable_tax_fed + self.inc_variable_tax_state) / 100
+            )
+
+    @property
+    def inc_secondary_monthly_net(self) -> Optional[Decimal]:
+        if (
+            self.inc_secondary_monthly is not None
+            and self.inc_secondary_tax_fed is not None
+            and self.inc_secondary_tax_state is not None
+        ):
+            return self.inc_secondary_monthly * Decimal(
+                1 - (self.inc_secondary_tax_fed + self.inc_secondary_tax_state) / 100
+            )
+
+    @property
+    def inc_total_monthly_net(self) -> Optional[Decimal]:
+        net_primary = self.inc_primary_monthly_net
+        net_variable = self.inc_variable_monthly_net
+        net_secondary = self.inc_secondary_monthly_net
+        if (
+            net_primary is not None
+            and net_variable is not None
+            and net_secondary is not None
+        ):
+            return net_primary + net_variable + net_secondary
+
+    @property
+    def inc_annual_tax_net(self) -> Optional[float]:
+        monthly_total_net = self.inc_total_monthly_net
+        if self.inc_total_annual is not None and monthly_total_net is not None:
+            total_net = monthly_total_net * Decimal('12')
+            return 100 - float(total_net / self.inc_total_annual) * 100
+
+    @property
+    def exp_total(self) -> Optional[Decimal]:
+        if (
+            self.exp_housing is not None
+            and self.exp_other_fixed is not None
+            and self.exp_other_variable is not None
+        ):
+            return self.exp_housing + self.exp_other_fixed + self.exp_other_variable
+
+    @property
+    def sav_total(self) -> Optional[Decimal]:
+        if self.sav_market is not None and self.sav_retirement is not None:
+            return self.sav_market + self.sav_retirement
+
     def save(self, update_fields=None, *args, **kwargs) -> 'User':
         recompute_update_fields = self.recompute_fields()
         if update_fields is not None:

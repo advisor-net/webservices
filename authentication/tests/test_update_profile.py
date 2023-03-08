@@ -87,7 +87,7 @@ class TestUpdateProfile(BaseJWTAPITestCase):
     def test_get_details(self):
         response = self.client.get(self.url)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertEqual(self.user.email, response.data['email'])
+        self.assertEqual(self.user.age, response.data['age'])
 
     def test_another_user_cannot_patch(self):
         other_user = UserFactory()
