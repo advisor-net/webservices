@@ -6,7 +6,7 @@ from rest_framework import serializers
 class UpdateUserValidator(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = []
+        exclude: list = []
         read_only_fields = [
             'id',
             'uuid',

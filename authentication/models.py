@@ -197,7 +197,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
             and self.inc_primary_tax_state is not None
             and self.inc_variable_tax_fed is not None
             and self.inc_variable_tax_state is not None
-            and self.inc_secondary_tax_state is not None
+            and self.inc_secondary_tax_fed is not None
             and self.inc_secondary_tax_state is not None
             and self.exp_housing is not None
             and self.exp_other_fixed is not None
@@ -295,6 +295,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
             return self.inc_primary_annual * Decimal(
                 (1 - (self.inc_primary_tax_fed + self.inc_primary_tax_state) / 100) / 12
             )
+        return None
 
     @property
     def inc_variable_monthly_net(self) -> Optional[Decimal]:
@@ -306,6 +307,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
             return self.inc_variable_monthly * Decimal(
                 1 - (self.inc_variable_tax_fed + self.inc_variable_tax_state) / 100
             )
+        return None
 
     @property
     def inc_secondary_monthly_net(self) -> Optional[Decimal]:
@@ -317,6 +319,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
             return self.inc_secondary_monthly * Decimal(
                 1 - (self.inc_secondary_tax_fed + self.inc_secondary_tax_state) / 100
             )
+        return None
 
     @property
     def inc_total_monthly_net(self) -> Optional[Decimal]:
@@ -329,6 +332,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
             and net_secondary is not None
         ):
             return net_primary + net_variable + net_secondary
+        return None
 
     @property
     def inc_annual_tax_net(self) -> Optional[float]:
@@ -336,6 +340,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
         if self.inc_total_annual is not None and monthly_total_net is not None:
             total_net = monthly_total_net * Decimal('12')
             return 100 - float(total_net / self.inc_total_annual) * 100
+        return None
 
     @property
     def exp_total(self) -> Optional[Decimal]:
@@ -345,11 +350,13 @@ class User(AbstractUser, SoftDeleteModelMixin):
             and self.exp_other_variable is not None
         ):
             return self.exp_housing + self.exp_other_fixed + self.exp_other_variable
+        return None
 
     @property
     def sav_total(self) -> Optional[Decimal]:
         if self.sav_market is not None and self.sav_retirement is not None:
             return self.sav_market + self.sav_retirement
+        return None
 
     def save(self, update_fields=None, *args, **kwargs) -> 'User':
         recompute_update_fields = self.recompute_fields()

@@ -46,7 +46,8 @@ repos:
     rev: v0.991
     hooks:
     -   id: mypy
-        files: webservices/
+        files: .
+        exclude: manage.py
         language_version: python3
         additional_dependencies:
           - "types-attrs==19.1.0"
