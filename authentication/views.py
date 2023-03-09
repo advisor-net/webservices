@@ -49,7 +49,11 @@ class CheckHandleView(CreateAPIView):
         validator = self.get_validator(data=request.data)
         validator.is_valid(raise_exception=True)
         data = validator.validated_data
-        if User.objects.filter(handle=data['handle']).exists():
+        if (
+            User.objects.filter(handle=data['handle'])
+            .exclude(id=request.user.id)
+            .exists()
+        ):
             return Response(status=status.HTTP_200_OK, data=dict(available=False))
         else:
             return Response(status=status.HTTP_200_OK, data=dict(available=True))
@@ -65,7 +69,7 @@ class UpdateHandleView(UpdateAPIView):
     def perform_update(self, validator):
         handle_value = validator.validated_data['handle']
         if (
-            User.objects.exclude(email=validator.instance.email)
+            User.objects.exclude(id=validator.instance.id)
             .filter(handle=handle_value)
             .exists()
         ):

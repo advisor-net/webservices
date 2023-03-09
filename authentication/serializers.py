@@ -40,7 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'password',
             'username',
-            'date_joined',
             'groups',
             'user_permissions',
             'deleted_at',

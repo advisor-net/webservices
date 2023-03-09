@@ -66,7 +66,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
 
     # profile setup
     handle: Optional[str] = models.CharField(
-        max_length=128, blank=True, null=True, unique=True
+        max_length=24, blank=True, null=True, unique=True
     )
     age: Optional[int] = models.IntegerField(null=True, db_index=True)
     gender: Optional[str] = models.CharField(

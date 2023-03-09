@@ -19,9 +19,11 @@ class UpdateUserValidator(serializers.ModelSerializer):
 
 
 class HandleValidator(serializers.Serializer):
-    handle = serializers.CharField(required=True, max_length=128)
+    handle = serializers.CharField(required=True, max_length=24)
 
     def validate_handle(self, value):
         if not value.isidentifier():
-            raise serializers.ValidationError("Handle is not a valid identifier")
+            raise serializers.ValidationError(
+                "Cannot contain special characters other than an underscore"
+            )
         return value
