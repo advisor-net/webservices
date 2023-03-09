@@ -170,32 +170,29 @@ class User(AbstractUser, SoftDeleteModelMixin):
     class Meta:
         db_table = 'users'
 
-    @property
-    def can_calc_inc_total_annual(self) -> bool:
-        return (
+    def recompute_inc_total_annual(self) -> bool:
+        if (
             self.inc_primary_annual is not None
             and self.inc_variable_monthly is not None
             and self.inc_secondary_monthly is not None
-        )
-
-    # TODO: come back and fix mypy complaints
-    def recompute_inc_total_annual(self) -> bool:
-        if self.can_calc_inc_total_annual:
+        ):
             new_value = (
                 self.inc_primary_annual
                 + self.inc_variable_monthly * Decimal('12')
                 + self.inc_secondary_monthly * Decimal('12')
             )
             changed = new_value != self.inc_total_annual
+            self.inc_total_annual = new_value
         else:
             changed = self.inc_total_annual is not None
             self.inc_total_annual = None
         return changed
 
-    @property
-    def can_calc_net_monthly_profit_loss(self) -> bool:
-        return (
-            self.can_calc_inc_total_annual
+    def recompute_net_monthly_profit_loss(self) -> bool:
+        if (
+            self.inc_primary_annual is not None
+            and self.inc_variable_monthly is not None
+            and self.inc_secondary_monthly is not None
             and self.inc_primary_tax_fed is not None
             and self.inc_primary_tax_state is not None
             and self.inc_variable_tax_fed is not None
@@ -207,10 +204,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
             and self.exp_other_variable is not None
             and self.sav_retirement is not None
             and self.sav_market is not None
-        )
-
-    def recompute_net_monthly_profit_loss(self) -> bool:
-        if self.can_calc_net_monthly_profit_loss:
+        ):
             net_primary = self.inc_primary_annual * Decimal(
                 (1 - self.inc_primary_tax_fed / 100 + self.inc_primary_tax_state / 100)
                 / 12
@@ -239,16 +233,12 @@ class User(AbstractUser, SoftDeleteModelMixin):
             self.net_monthly_profit_loss = None
         return changed
 
-    @property
-    def can_calc_assets_total(self) -> bool:
-        return (
+    def recompute_assets_total(self) -> bool:
+        if (
             self.assets_savings is not None
             and self.assets_property is not None
             and self.assets_misc is not None
-        )
-
-    def recompute_assets_total(self) -> bool:
-        if self.can_calc_assets_total:
+        ):
             new_value = self.assets_savings + self.assets_property + self.assets_misc
             changed = new_value != self.assets_total
             self.assets_total = new_value
@@ -257,16 +247,12 @@ class User(AbstractUser, SoftDeleteModelMixin):
             self.assets_total = None
         return changed
 
-    @property
-    def can_calc_lia_total(self) -> bool:
-        return (
+    def recompute_lia_total(self) -> bool:
+        if (
             self.lia_loans is not None
             and self.lia_credit_card is not None
             and self.lia_misc is not None
-        )
-
-    def recompute_lia_total(self) -> bool:
-        if self.can_calc_lia_total:
+        ):
             new_value = self.lia_loans + self.lia_credit_card + self.lia_misc
             changed = new_value != self.lia_total
             self.lia_total = new_value
@@ -275,12 +261,8 @@ class User(AbstractUser, SoftDeleteModelMixin):
             self.lia_total = None
         return changed
 
-    @property
-    def can_calc_net_worth(self) -> bool:
-        return self.assets_total is not None and self.lia_total is not None
-
     def recompute_net_worth(self) -> bool:
-        if self.can_calc_net_worth:
+        if self.assets_total is not None and self.lia_total is not None:
             new_value = self.assets_total - self.lia_total
             changed = new_value != self.net_worth
             self.net_worth = new_value
