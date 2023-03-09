@@ -19,7 +19,7 @@ class UpdateUserValidator(serializers.ModelSerializer):
 
 
 class HandleValidator(serializers.Serializer):
-    handle = serializers.CharField(required=True, max_length=24)
+    handle = serializers.CharField(required=True, min_length=4, max_length=24)
 
     def validate_handle(self, value):
         if not value.isidentifier():
