@@ -250,6 +250,10 @@ CELERY_TASK_ALWAYS_EAGER = False
 # add this to requirements: django-celery-beat==2.4.0
 # CELERY_BEAT_SCHEDULE = {}
 
+# CHAT ENGINE
+CHAT_ENGINE_BASE_URL = "https://api.chatengine.io/"
+CHAT_ENGINE_PROJECT_ID = get_secret("CHAT_ENGINE_PROJECT_ID")
+CHAT_ENGINE_SECRET_KEY = get_secret("CHAT_ENGINE_SECRET_KEY")
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

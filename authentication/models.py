@@ -23,7 +23,7 @@ class JobTitle(TimeStampedModel):
 
 class UserQuerySet(models.QuerySet):
     def with_related_objects_selected(self):
-        return self.select_related('metro', 'industry', 'job_title')
+        return self.select_related('metro', 'industry', 'job_title', 'chat_user')
 
 
 class UserManager(BaseUserManager):
@@ -363,3 +363,14 @@ class User(AbstractUser, SoftDeleteModelMixin):
         if update_fields is not None:
             update_fields.extend(recompute_update_fields)
         return super().save(update_fields=update_fields, *args, **kwargs)
+
+
+class ChatUser(TimeStampedModel, SoftDeleteModelMixin):
+    user = models.OneToOneField(
+        to=User, related_name='chat_user', null=False, on_delete=models.CASCADE
+    )
+    chat_engine_id = models.BigIntegerField(null=False)
+    # NOTE: will be synced with the handle on the user
+    username = models.CharField(max_length=24, blank=False, null=False, unique=True)
+    secret = models.UUIDField(default=uuid4, editable=False, null=False)
+    agreed_to_terms = models.BooleanField(default=False)

@@ -15,7 +15,6 @@ class TestListUsers(BaseJWTAPITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.authenticate_with_generated_token(self.user)
-        self.base_url = '/api/users/'
         self.url = reverse('user_list')
 
     def test_list_pagination(self):
@@ -221,3 +220,11 @@ class TestListUsers(BaseJWTAPITestCase):
             User.CurrentPFMChoices.MINT.value,
             User.CurrentPFMChoices.ROCKET_MONEY.value,
         )
+
+    def test_search_by_handle(self):
+        UserFactory(handle='other_name1')
+        UserFactory(handle='other_name2')
+        UserFactory(handle='other_name3')
+        response = self.client.get(self.url, data=dict(search="other_name"))
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(3, len(response.data['results']))

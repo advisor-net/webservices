@@ -15,10 +15,12 @@ Including another URLconf
 """
 from authentication.views import (
     CheckHandleView,
+    CreateChatUserView,
     IndustrySearch,
     JobTitleSearch,
     MetropolitanAreaSearch,
     ProfileView,
+    UpdateChatTermsAgreementView,
     UpdateHandleView,
     UserDetailsView,
     UserListView,
@@ -45,6 +47,16 @@ urlpatterns = [
         name='update_handle',
     ),
     path('api/user/profile/<str:uuid>/', UserDetailsView.as_view(), name='user_detail'),
+    path(
+        'api/user/chat_user/<str:uuid>/',
+        CreateChatUserView.as_view(),
+        name='create_chat_user',
+    ),
+    path(
+        'api/user/chat_user_terms/<str:uuid>/',
+        UpdateChatTermsAgreementView.as_view(),
+        name='update_chat_terms',
+    ),
     path('api/users/', UserListView.as_view(), name='user_list'),
     path('api/metros/', MetropolitanAreaSearch.as_view(), name='metro_list'),
     path('api/industries/', IndustrySearch.as_view(), name='industry_list'),

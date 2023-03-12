@@ -1,4 +1,5 @@
-from authentication.models import Industry, JobTitle, MetropolitanArea, User
+from authentication.models import ChatUser, Industry, JobTitle, MetropolitanArea, User
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 
@@ -20,6 +21,12 @@ class JobTitleSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
+class ChatUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatUser
+        fields = ['chat_engine_id', 'username', 'secret', 'agreed_to_terms']
+
+
 class UserSerializer(serializers.ModelSerializer):
     metro = MetropolitanAreaSerializer()
     industry = IndustrySerializer()
@@ -33,6 +40,13 @@ class UserSerializer(serializers.ModelSerializer):
     inc_annual_tax_net = serializers.FloatField()
     exp_total = serializers.DecimalField(max_digits=12, decimal_places=2)
     sav_total = serializers.DecimalField(max_digits=12, decimal_places=2)
+    chat_user = serializers.SerializerMethodField()
+
+    def get_chat_user(self, instance):
+        try:
+            return ChatUserSerializer(instance=instance.chat_user).data
+        except ObjectDoesNotExist:
+            return None
 
     class Meta:
         model = User
@@ -62,8 +76,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    metro = MetropolitanAreaSerializer()
-
     class Meta:
         model = User
-        fields = ['uuid', 'id', 'email', 'metro']
+        fields = ['uuid', 'id', 'email']
