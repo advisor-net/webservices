@@ -20,6 +20,7 @@ from authentication.views import (
     JobTitleSearch,
     MetropolitanAreaSearch,
     ProfileView,
+    ReportUserView,
     UpdateChatTermsAgreementView,
     UpdateHandleView,
     UserDetailsView,
@@ -61,5 +62,6 @@ urlpatterns = [
     path('api/metros/', MetropolitanAreaSearch.as_view(), name='metro_list'),
     path('api/industries/', IndustrySearch.as_view(), name='industry_list'),
     path('api/job_titles/', JobTitleSearch.as_view(), name='job_title_list'),
+    path('api/user/report_misconduct/', ReportUserView.as_view(), name='report_user'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/#serving-files-uploaded-by-a-user-during-development

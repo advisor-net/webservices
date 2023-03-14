@@ -377,3 +377,14 @@ class ChatUser(TimeStampedModel, SoftDeleteModelMixin):
     # TODO: we do not need this flow, just keep the basic uuid and get rid of the chat engine secret
     secret = models.CharField(max_length=128, editable=False, null=False)
     agreed_to_terms = models.BooleanField(default=False)
+
+
+class ReportedMisconduct(TimeStampedModel):
+    plaintiff = models.ForeignKey(
+        to=User, related_name='cases_as_plaintiff', null=False, on_delete=models.CASCADE
+    )
+    defendant = models.ForeignKey(
+        to=User, related_name='cases_as_defendant', null=False, on_delete=models.CASCADE
+    )
+    description = models.TextField(null=False)
+    acknowledged_by_staff = models.BooleanField(default=False)

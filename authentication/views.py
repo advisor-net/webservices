@@ -5,7 +5,13 @@ from authentication.filters import (
     MetropolitanAreaFilter,
     UserFilter,
 )
-from authentication.models import Industry, JobTitle, MetropolitanArea, User
+from authentication.models import (
+    Industry,
+    JobTitle,
+    MetropolitanArea,
+    ReportedMisconduct,
+    User,
+)
 from authentication.serializers import (
     IndustrySerializer,
     JobTitleSerializer,
@@ -14,7 +20,9 @@ from authentication.serializers import (
     UserSerializer,
 )
 from authentication.validators import HandleValidator, UpdateUserValidator
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from rest_framework import serializers, status
 from rest_framework.filters import SearchFilter
@@ -27,6 +35,7 @@ from webservices.api.views import (
     RetrieveAPIView,
     UpdateAPIView,
 )
+from webservices.celery import send_email
 from webservices.paginators import StandardPageNumberPagination
 from webservices.permissions import AdminOrUserSelf, MethodSpecificPermission
 
@@ -202,3 +211,34 @@ class UpdateChatTermsAgreementView(CreateAPIView):
         return Response(
             status=status.HTTP_200_OK, data=self.get_serializer(instance=user).data
         )
+
+
+class ReportUserView(CreateAPIView):
+    class Validator(serializers.Serializer):
+        handle = serializers.CharField(required=True)
+        description = serializers.CharField(required=True)
+
+    validator_class = Validator
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
+    def post(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        validator = self.get_validator(data=request.data)
+        validator.is_valid(raise_exception=True)
+        data = validator.validated_data
+        user = self.get_object()
+        other_user = get_object_or_404(User, handle=data["handle"])
+        ReportedMisconduct.objects.create(
+            plaintiff=user,
+            defendant=other_user,
+            description=data["description"],
+        )
+        send_email(
+            f'{user.handle} has reported {other_user.handle} for misconduct',
+            data["description"],
+            settings.ADMIN_EMAIL,
+        )
+        return Response(status=status.HTTP_200_OK)

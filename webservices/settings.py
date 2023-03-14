@@ -63,6 +63,9 @@ DEBUG = get_bool_secret('DEBUG')
 
 API_URL = get_secret('API_URL')
 SITE_URL = get_secret('SITE_URL')
+ADMIN_EMAIL = get_secret('ADMIN_EMAIL')
+SEND_EMAILS = get_bool_secret('SEND_EMAILS')
+EMAIL_BACKEND = 'django_ses.SESBackend'
 
 AUTH_USER_MODEL = 'authentication.User'
 
