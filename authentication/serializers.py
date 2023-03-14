@@ -24,7 +24,7 @@ class JobTitleSerializer(serializers.ModelSerializer):
 class ChatUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatUser
-        fields = ['chat_engine_id', 'username', 'secret', 'agreed_to_terms']
+        fields = ['chat_engine_id', 'username', 'password', 'agreed_to_terms']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -75,7 +75,17 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
+# TODO: consolidate with login stuff
 class ProfileSerializer(serializers.ModelSerializer):
+    chat_user = serializers.SerializerMethodField()
+    metro = MetropolitanAreaSerializer()
+
+    def get_chat_user(self, instance):
+        try:
+            return ChatUserSerializer(instance=instance.chat_user).data
+        except ObjectDoesNotExist:
+            return None
+
     class Meta:
         model = User
-        fields = ['uuid', 'id', 'email']
+        fields = ['uuid', 'id', 'email', 'chat_user', 'metro']

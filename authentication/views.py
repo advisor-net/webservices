@@ -114,7 +114,7 @@ class UserListView(ListAPIView):
     queryset = User.objects.all().with_related_objects_selected()
     pagination_class = StandardPageNumberPagination
     filter_backends = [SearchFilter, filters.DjangoFilterBackend]
-    search_filters = ['handle']
+    search_fields = ['handle', 'uuid']
     filterset_class = UserFilter
 
     def get_queryset(self):
@@ -157,7 +157,7 @@ class JobTitleSearch(ListAPIView):
 # NOTE: this lets one user create a chat user for another member, somewhat at will...this is because
 # we are creating chat users on demand as users try to chat to save cost with ChatEngine.io
 # That is why we are excluding the AdminOrUserSelf permission here
-class CreateChatUserView(CreateAPIView):
+class GetOrCreateChatUserView(CreateAPIView):
     class Validator(serializers.Serializer):
         agreed_to_terms = serializers.BooleanField(required=True)
 

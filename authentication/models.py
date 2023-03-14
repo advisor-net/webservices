@@ -372,5 +372,8 @@ class ChatUser(TimeStampedModel, SoftDeleteModelMixin):
     chat_engine_id = models.BigIntegerField(null=False)
     # NOTE: will be synced with the handle on the user
     username = models.CharField(max_length=24, blank=False, null=False, unique=True)
-    secret = models.UUIDField(default=uuid4, editable=False, null=False)
+    password = models.UUIDField(default=uuid4, editable=False, null=False)
+    # NOTE: will be a hashified password returned from their API
+    # TODO: we do not need this flow, just keep the basic uuid and get rid of the chat engine secret
+    secret = models.CharField(max_length=128, editable=False, null=False)
     agreed_to_terms = models.BooleanField(default=False)

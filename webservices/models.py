@@ -2,7 +2,10 @@ from django.db import models
 from django.utils import timezone
 
 
-class SoftDeleteModelMixin:
+class SoftDeleteModelMixin(models.Model):
+    class Meta:
+        abstract = True
+
     deleted_at = models.DateTimeField(blank=True, null=True, default=None)
 
     @property

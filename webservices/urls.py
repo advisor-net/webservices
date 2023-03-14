@@ -15,7 +15,7 @@ Including another URLconf
 """
 from authentication.views import (
     CheckHandleView,
-    CreateChatUserView,
+    GetOrCreateChatUserView,
     IndustrySearch,
     JobTitleSearch,
     MetropolitanAreaSearch,
@@ -49,8 +49,8 @@ urlpatterns = [
     path('api/user/profile/<str:uuid>/', UserDetailsView.as_view(), name='user_detail'),
     path(
         'api/user/chat_user/<str:uuid>/',
-        CreateChatUserView.as_view(),
-        name='create_chat_user',
+        GetOrCreateChatUserView.as_view(),
+        name='get_or_create_chat_user',
     ),
     path(
         'api/user/chat_user_terms/<str:uuid>/',

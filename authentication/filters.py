@@ -3,6 +3,7 @@ from django_filters import rest_framework as filters
 
 
 class UserFilter(filters.FilterSet):
+    handle = filters.CharFilter(field_name='handle')
     age = filters.NumberFilter(field_name='age')
     age__lt = filters.NumberFilter(field_name='age', lookup_expr='lt')
     age__lte = filters.NumberFilter(field_name='age', lookup_expr='lte')

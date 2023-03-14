@@ -225,6 +225,17 @@ class TestListUsers(BaseJWTAPITestCase):
         UserFactory(handle='other_name1')
         UserFactory(handle='other_name2')
         UserFactory(handle='other_name3')
+        UserFactory(handle='not_included')
         response = self.client.get(self.url, data=dict(search="other_name"))
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(3, len(response.data['results']))
+
+    def test_filter_by_handle(self):
+        u1 = UserFactory(handle='other_name1')
+        UserFactory(handle='other_name12')
+        UserFactory(handle='other_name123')
+        UserFactory(handle='not_included')
+        response = self.client.get(self.url, data=dict(handle="other_name1"))
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(1, len(response.data['results']))
+        self.assertEqual(response.data['results'][0]['id'], u1.id)
