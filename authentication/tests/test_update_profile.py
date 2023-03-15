@@ -10,14 +10,13 @@ from authentication.factories import (
 from authentication.models import User
 from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.test import APITestCase
 
-from webservices.test_utils import BaseJWTAPITestCase
 
-
-class TestUpdateHandle(BaseJWTAPITestCase):
+class TestUpdateHandle(APITestCase):
     def setUp(self):
         self.user = EmptyUserFactory()
-        self.authenticate_with_generated_token(self.user)
+        self.client.force_authenticate(self.user)
 
     def test_check_handle_availability(self):
         url = reverse('check_handle', kwargs=dict(uuid=str(self.user.uuid)))
@@ -53,7 +52,7 @@ class TestUpdateHandle(BaseJWTAPITestCase):
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
 
-class TestUpdateProfile(BaseJWTAPITestCase):
+class TestUpdateProfile(APITestCase):
     def setUp(self):
         self.user = UserFactory(
             age=20,
@@ -81,7 +80,7 @@ class TestUpdateProfile(BaseJWTAPITestCase):
             lia_credit_card=Decimal('1100'),
             lia_misc=Decimal('1100'),
         )
-        self.authenticate_with_generated_token(self.user)
+        self.client.force_authenticate(self.user)
         self.url = reverse('user_detail', kwargs=dict(uuid=str(self.user.uuid)))
 
     def test_get_details(self):
@@ -91,7 +90,7 @@ class TestUpdateProfile(BaseJWTAPITestCase):
 
     def test_another_user_cannot_patch(self):
         other_user = UserFactory()
-        self.authenticate_with_generated_token(other_user)
+        self.client.force_authenticate(other_user)
         self.url = reverse('user_detail', kwargs=dict(uuid=str(self.user.uuid)))
         response = self.client.patch(self.url, data=dict(age=25))
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)

@@ -31,6 +31,7 @@ from rest_framework.response import Response
 
 from webservices.api.views import (
     CreateAPIView,
+    DestroyAPIView,
     ListAPIView,
     RetrieveAPIView,
     UpdateAPIView,
@@ -47,6 +48,15 @@ class ProfileView(RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class LogoutView(DestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, *args, **kwargs):
+        user = self.request.user
+        user.auth_token.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CheckHandleView(CreateAPIView):

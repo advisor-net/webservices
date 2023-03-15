@@ -7,14 +7,13 @@ from authentication.factories import (
 from authentication.models import Industry, JobTitle, MetropolitanArea
 from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.test import APITestCase
 
-from webservices.test_utils import BaseJWTAPITestCase
 
-
-class TestListMetropolitanAreas(BaseJWTAPITestCase):
+class TestListMetropolitanAreas(APITestCase):
     def setUp(self):
         self.user = UserFactory()
-        self.authenticate_with_generated_token(self.user)
+        self.client.force_authenticate(self.user)
         self.url = reverse('metro_list')
         to_create = []
         for i in range(25):
@@ -51,10 +50,10 @@ class TestListMetropolitanAreas(BaseJWTAPITestCase):
         self.assertEqual(data['results'][1]['name'], m2.name)
 
 
-class TestListIndustries(BaseJWTAPITestCase):
+class TestListIndustries(APITestCase):
     def setUp(self):
         self.user = UserFactory()
-        self.authenticate_with_generated_token(self.user)
+        self.client.force_authenticate(self.user)
         self.url = reverse('industry_list')
         to_create = []
         for i in range(25):
@@ -91,10 +90,10 @@ class TestListIndustries(BaseJWTAPITestCase):
         self.assertEqual(data['results'][1]['name'], m2.name)
 
 
-class TestListJobTitles(BaseJWTAPITestCase):
+class TestListJobTitles(APITestCase):
     def setUp(self):
         self.user = UserFactory()
-        self.authenticate_with_generated_token(self.user)
+        self.client.force_authenticate(self.user)
         self.url = reverse('job_title_list')
         to_create = []
         for i in range(25):

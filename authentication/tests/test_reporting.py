@@ -3,14 +3,13 @@ from authentication.models import ReportedMisconduct
 from django.test import override_settings
 from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.test import APITestCase
 
-from webservices.test_utils import BaseJWTAPITestCase
 
-
-class TestListUsers(BaseJWTAPITestCase):
+class TestListUsers(APITestCase):
     def setUp(self):
         self.user = UserFactory()
-        self.authenticate_with_generated_token(self.user)
+        self.client.force_authenticate(self.user)
         self.other_user = UserFactory()
         self.url = reverse('report_user')
 

@@ -140,7 +140,6 @@ def send_email(
     reply_to=None,
     attachments=None,
 ):
-    print(settings.SEND_EMAILS)
     if settings.SEND_EMAILS:
         send_email_task.delay(
             subject,

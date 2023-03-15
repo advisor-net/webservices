@@ -1,15 +1,10 @@
-import time
-from datetime import timedelta
-
 from authentication.models import User
 from rest_framework import status
 from rest_framework.reverse import reverse
-from rest_framework_simplejwt.tokens import RefreshToken
-
-from webservices.test_utils import BaseJWTAPITestCase
+from rest_framework.test import APITestCase
 
 
-class TestJWTAuth(BaseJWTAPITestCase):
+class TestTokenAuth(APITestCase):
     def setUp(self):
         self.email = "test_user"
         self.eng_password = "test_password"
@@ -19,48 +14,48 @@ class TestJWTAuth(BaseJWTAPITestCase):
             password=self.eng_password,
         )
 
-    def test_cannot_access_without_jwt_token(self):
+    def test_cannot_access_without_token(self):
         url = reverse('auth_profile')
         response = self.client.get(path=url)
         self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
 
-    def test_direct_jwt_authentication(self):
-        self.authenticate_with_generated_token(self.user)
-        url = reverse('auth_profile')
-        response = self.client.get(path=url)
-        self.assertEqual(status.HTTP_200_OK, response.status_code)
-
-    def test_token_obtain_pair(self):
-        url = reverse('token_obtain_pair')
+    def test_login(self):
+        url = reverse('api_token_auth')
         response = self.client.post(
             url, data=dict(username=self.email, password=self.eng_password)
         )
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {response.data['token']}")
+        url = reverse('auth_profile')
+        response = self.client.get(path=url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
 
     def test_reject_bad_credentials(self):
-        url = reverse('token_obtain_pair')
+        url = reverse('api_token_auth')
         response = self.client.post(
             url, data=dict(username=self.email, password='other_password')
         )
-        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
-    def test_token_refresh(self):
-        refresh_token = self.authenticate_with_generated_token(self.user)
-        url = reverse('token_refresh')
-        response = self.client.post(url, data=dict(refresh=str(refresh_token)))
+    def test_logout(self):
+        url = reverse('api_token_auth')
+        response = self.client.post(
+            url, data=dict(username=self.email, password=self.eng_password)
+        )
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertIn('access', response.data)
-
-    def test_token_refresh_with_expired_token(self):
-        old_lifetime = RefreshToken.lifetime
-        RefreshToken.lifetime = timedelta(seconds=1)
-        refresh_token = RefreshToken.for_user(self.user)
-        RefreshToken.lifetime = old_lifetime
-        time.sleep(1)
-
-        self.authenticate_with_access_token(str(refresh_token.access_token))
-        url = reverse('token_refresh')
-        response = self.client.post(url, data=dict(refresh=str(refresh_token)))
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {response.data['token']}")
+        url = reverse('auth_profile')
+        response = self.client.get(path=url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        url = reverse('logout')
+        response = self.client.delete(path=url)
+        self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
+        url = reverse('auth_profile')
+        response = self.client.get(path=url)
         self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+
+    def test_force_authenticate(self):
+        self.client.force_authenticate(self.user)
+        url = reverse('auth_profile')
+        response = self.client.get(path=url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)

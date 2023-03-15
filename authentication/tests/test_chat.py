@@ -6,14 +6,13 @@ from authentication.models import ChatUser
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.reverse import reverse
+from rest_framework.test import APITestCase
 
-from webservices.test_utils import BaseJWTAPITestCase
 
-
-class TestChatHelperTestCase(BaseJWTAPITestCase):
+class TestChatHelperTestCase(APITestCase):
     def setUp(self):
         self.user = UserFactory(handle="TEST_USER1")
-        self.authenticate_with_generated_token(self.user)
+        self.client.force_authenticate(self.user)
         self.helper = ChatEngineHelper()
         self.chat_user = self.helper.create_chat_user(self.user, False)
         resp = self.helper.get_chat_user_by_id(self.chat_user.chat_engine_id)
