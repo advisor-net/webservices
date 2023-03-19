@@ -75,7 +75,6 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
-# TODO: consolidate with login stuff
 class ProfileSerializer(serializers.ModelSerializer):
     chat_user = serializers.SerializerMethodField()
     metro = MetropolitanAreaSerializer()
@@ -88,4 +87,4 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['uuid', 'id', 'email', 'chat_user', 'metro']
+        fields = ['uuid', 'id', 'email', 'chat_user', 'metro', 'email_verified']
