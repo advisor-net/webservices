@@ -65,12 +65,12 @@ def send_email_task(
 
     # only send emails to the first 50 people
     # email priority order: default paperless bcc email, to, cc, bcc
-    recipientsLeft = 49
-    to = to[:recipientsLeft]
-    recipientsLeft = max(0, recipientsLeft - len(to))
-    cc = cc[:recipientsLeft]
-    recipientsLeft = max(0, recipientsLeft - len(cc))
-    bcc = bcc[:recipientsLeft]
+    recipients_left = 49
+    to = to[:recipients_left]
+    recipients_left = max(0, recipients_left - len(to))
+    cc = cc[:recipients_left]
+    recipients_left = max(0, recipients_left - len(cc))
+    bcc = bcc[:recipients_left]
     bcc.append(settings.ADMIN_EMAIL)
 
     if isinstance(subject, str):

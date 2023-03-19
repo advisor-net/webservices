@@ -14,18 +14,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from authentication.views import (
+    ChangePasswordView,
     CheckHandleView,
     GetOrCreateChatUserView,
     IndustrySearch,
     JobTitleSearch,
+    JoinWaitlistView,
     LogoutView,
     MetropolitanAreaSearch,
     ProfileView,
     ReportUserView,
+    RequestResetPasswordView,
+    ResendEmailVerificationLinkView,
+    ResetPasswordView,
+    SignUpView,
     UpdateChatTermsAgreementView,
     UpdateHandleView,
     UserDetailsView,
     UserListView,
+    VerifyEmailView,
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -64,5 +71,20 @@ urlpatterns = [
     path('api/industries/', IndustrySearch.as_view(), name='industry_list'),
     path('api/job_titles/', JobTitleSearch.as_view(), name='job_title_list'),
     path('api/user/report_misconduct/', ReportUserView.as_view(), name='report_user'),
+    path('api/waitlist/', JoinWaitlistView.as_view(), name='waitlist'),
+    path('api/signup/', SignUpView.as_view(), name='sign_up'),
+    path(
+        'api/resend_email_verification/',
+        ResendEmailVerificationLinkView.as_view(),
+        name='resend_email_verification',
+    ),
+    path('api/verify_email/', VerifyEmailView.as_view(), name='verify_email'),
+    path(
+        'api/request_password_reset/',
+        RequestResetPasswordView.as_view(),
+        name='request_password_reset',
+    ),
+    path('api/reset_password/', ResetPasswordView.as_view(), name='reset_password'),
+    path('api/change_password/', ChangePasswordView.as_view(), name='change_password'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/#serving-files-uploaded-by-a-user-during-development

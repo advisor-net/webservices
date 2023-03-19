@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from authentication.chat_engine_helper import ChatEngineHelper
 from authentication.filters import (
     IndustryFilter,
@@ -10,7 +12,11 @@ from authentication.models import (
     JobTitle,
     MetropolitanArea,
     ReportedMisconduct,
+    ResetPasswordLink,
+    SignUpLink,
     User,
+    VerifyEmailLink,
+    WaitListEntry,
 )
 from authentication.serializers import (
     IndustrySerializer,
@@ -21,12 +27,15 @@ from authentication.serializers import (
 )
 from authentication.validators import HandleValidator, UpdateUserValidator
 from django.conf import settings
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from webservices.api.views import (
@@ -50,6 +59,7 @@ class ProfileView(RetrieveAPIView):
         return self.request.user
 
 
+# TODO: ping this on the frontend
 class LogoutView(DestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
@@ -251,4 +261,242 @@ class ReportUserView(CreateAPIView):
             data["description"],
             settings.ADMIN_EMAIL,
         )
+        return Response(status=status.HTTP_200_OK)
+
+
+class JoinWaitlistView(CreateAPIView):
+    class Validator(serializers.Serializer):
+        email = serializers.EmailField(required=True)
+        how_did_you_hear_about_us = serializers.CharField(required=True)
+        why_do_you_want_to_join = serializers.CharField(required=True)
+
+    validator_class = Validator
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        validator = self.get_validator(data=request.data)
+        validator.is_valid(raise_exception=True)
+        data = validator.validated_data
+        WaitListEntry.objects.get_or_create(
+            email=data.pop('email'),
+            defaults=data,
+        )
+        return Response(status=status.HTTP_200_OK)
+
+
+class SignUpView(CreateAPIView):
+    class Validator(serializers.Serializer):
+        sign_up_link_uuid = serializers.UUIDField(required=True)
+        email = serializers.EmailField(required=True)
+        password = serializers.CharField(required=True, min_length=8)
+
+        def validate(self, attrs):
+            if not SignUpLink.objects.filter(
+                uuid=attrs["sign_up_link_uuid"], email=attrs["email"]
+            ).exists():
+                raise ValidationError('Invalid sign up link information')
+            try:
+                validate_password(attrs['password'])
+            except Exception as e:
+                raise ValidationError(str(e))
+            return attrs
+
+    validator_class = Validator
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        validator = self.get_validator(data=request.data)
+        validator.is_valid(raise_exception=True)
+        data = validator.validated_data
+
+        user = User.objects.create_user(
+            username=data['email'],
+            email=data['email'],
+            password=data['password'],
+        )
+
+        # delete sign up link, personal to only that user
+        SignUpLink.objects.filter(
+            uuid=data["sign_up_link_uuid"], email=data["email"]
+        ).delete()
+
+        verify_link = VerifyEmailLink.objects.create(
+            user=user,
+        )
+
+        # send the verify email link to the inbox
+        send_email(
+            subject="Verify email address for Advisor",
+            body=f"Click this link to verify your email address:\n"
+            f"{settings.SITE_URL}/verify_email/{str(verify_link.uuid)}",
+            to=user.email,
+        )
+        return Response(status=status.HTTP_201_CREATED)
+
+
+class ResendEmailVerificationLinkView(CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
+    def post(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        user = self.get_object()
+        verify_link, _ = VerifyEmailLink.objects.get_or_create(user=user)
+
+        send_email(
+            subject="Verify email address for Advisor",
+            body=f"Click this link to verify your email address:\n"
+            f"{settings.SITE_URL}/verify_email/{str(verify_link.uuid)}",
+            to=user.email,
+        )
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class VerifyEmailView(CreateAPIView):
+    class Validator(serializers.Serializer):
+        verify_link_uuid = serializers.UUIDField(required=True)
+
+    permission_classes = (IsAuthenticated,)
+    validator_class = Validator
+    serializer_class = ProfileSerializer
+
+    def get_object(self):
+        return self.request.user
+
+    def post(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        validator = self.get_validator(data=request.data)
+        validator.is_valid(raise_exception=True)
+        data = validator.validated_data
+        user = self.get_object()
+        verify_link = VerifyEmailLink.objects.filter(
+            user=user, uuid=data["verify_link_uuid"]
+        ).first()
+        if not verify_link:
+            raise ValidationError('Invalid verification link')
+        user.email_verified = True
+        user.save()
+        verify_link.delete()
+        return Response(
+            status=status.HTTP_200_OK, data=self.get_serializer(instance=user).data
+        )
+
+
+class RequestResetPasswordView(CreateAPIView):
+    class Validator(serializers.Serializer):
+        email = serializers.EmailField(required=True)
+
+    validator_class = Validator
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        validator = self.get_validator(data=request.data)
+        validator.is_valid(raise_exception=True)
+        data = validator.validated_data
+        user = User.objects.filter(email=data['email']).first()
+        if not user:
+            # NOTE: we are hiding any details of the error here
+            return Response(status=status.HTTP_200_OK)
+
+        reset_link, created = ResetPasswordLink.objects.get_or_create(
+            email=data['email'],
+            defaults=dict(
+                email=data['email'],
+                expires_on=timezone.now() + timedelta(days=1),
+            ),
+        )
+        if not created:
+            reset_link.expires_on = timezone.now() + timedelta(days=1)
+            reset_link.save()
+
+        send_email(
+            subject="Reset password for Advisor",
+            body=f"Click this link to reset your password:\n"
+            f"{settings.SITE_URL}/reset_password/{str(reset_link.uuid)}",
+            to=data['email'],
+        )
+        return Response(status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(CreateAPIView):
+    class Validator(serializers.Serializer):
+        reset_link_uuid = serializers.UUIDField(required=True)
+        email = serializers.EmailField(required=True)
+        password = serializers.CharField(required=True, min_length=8)
+
+        def validate(self, attrs):
+            if not User.objects.filter(email=attrs['email']).exists():
+                raise ValidationError('Unknown error')
+            reset_link = ResetPasswordLink.objects.filter(
+                uuid=attrs["reset_link_uuid"], email=attrs["email"]
+            ).first()
+            if not reset_link:
+                raise ValidationError('Invalid reset password link information')
+            if timezone.now() > reset_link.expires_on:
+                raise ValidationError(
+                    'Reset password link has expired, please request another one'
+                )
+            try:
+                validate_password(attrs['password'])
+            except Exception as e:
+                raise ValidationError(str(e))
+            return attrs
+
+    validator_class = Validator
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        validator = self.get_validator(data=request.data)
+        validator.is_valid(raise_exception=True)
+        data = validator.validated_data
+        user = User.objects.filter(email=data['email']).first()
+        user.set_password(data['password'])
+        user.email_verified = True
+        user.save(update_fields=['password', 'email_verified'])
+        # delete auth token
+        try:
+            user.auth_token.delete()
+        except ObjectDoesNotExist:
+            pass
+        # now delete the reset password link
+        ResetPasswordLink.objects.filter(uuid=data['reset_link_uuid']).delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+class ChangePasswordView(CreateAPIView):
+    class Validator(serializers.Serializer):
+        current_password = serializers.CharField(required=True)
+        new_password = serializers.CharField(required=True)
+
+        def validate_new_password(self, value):
+            try:
+                validate_password(value)
+            except Exception as e:
+                raise ValidationError(str(e))
+            return value
+
+    permission_classes = (IsAuthenticated,)
+    validator_class = Validator
+
+    def get_object(self):
+        return self.request.user
+
+    def post(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        validator = self.get_validator(data=request.data)
+        validator.is_valid(raise_exception=True)
+        data = validator.validated_data
+        user = self.get_object()
+        if user.check_password(data['current_password']):
+            user.set_password(data['new_password'])
+            user.save()
+        else:
+            raise ValidationError('Invalid existing password')
         return Response(status=status.HTTP_200_OK)

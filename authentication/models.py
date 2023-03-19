@@ -63,6 +63,7 @@ class User(AbstractUser, SoftDeleteModelMixin):
 
     # for profile urls
     uuid = models.UUIDField(default=uuid4, editable=False, null=False)
+    email_verified = models.BooleanField(default=False)
 
     # profile setup
     handle: Optional[str] = models.CharField(
@@ -388,3 +389,34 @@ class ReportedMisconduct(TimeStampedModel):
     )
     description = models.TextField(null=False)
     acknowledged_by_staff = models.BooleanField(default=False)
+
+
+# NOTE: these will be deleted upon being used
+class SignUpLink(TimeStampedModel):
+    email = models.EmailField(null=False, unique=True)
+    uuid = models.UUIDField(default=uuid4, editable=False, null=False)
+
+    @property
+    def is_valid(self) -> bool:
+        return not User.objects.filter(email=self.email).exists()
+
+
+class WaitListEntry(TimeStampedModel):
+    email = models.EmailField(null=False, unique=True)
+    how_did_you_hear_about_us = models.TextField(null=True)
+    why_do_you_want_to_join = models.TextField(null=True)
+
+
+# NOTE: these will be deleted upon being used
+# TODO: use a cache for this?
+class ResetPasswordLink(TimeStampedModel):
+    email = models.EmailField(null=False, unique=True)
+    uuid = models.UUIDField(default=uuid4, editable=False, null=False)
+    expires_on = models.DateTimeField(null=False)
+
+
+# NOTE: these will be deleted upon being used
+# TODO: use a cache for this?
+class VerifyEmailLink(TimeStampedModel):
+    user = models.ForeignKey(to=User, null=False, on_delete=models.CASCADE)
+    uuid = models.UUIDField(default=uuid4, editable=False, null=False)

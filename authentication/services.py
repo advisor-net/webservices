@@ -10,3 +10,8 @@ def delete_chat_user(chat_user: ChatUser):
     except ValidationError:
         pass
     chat_user.delete(hard_delete=True)
+
+
+def send_signup_link_for_email(email: str):
+    # get or create a sign up link and send the email to that email
+    pass

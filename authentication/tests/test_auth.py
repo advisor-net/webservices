@@ -59,3 +59,33 @@ class TestTokenAuth(APITestCase):
         url = reverse('auth_profile')
         response = self.client.get(path=url)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+    def test_change_password_success(self):
+        self.client.force_authenticate(self.user)
+        url = reverse('change_password')
+        data = dict(current_password=self.eng_password, new_password="NewPassword!123")
+        response = self.client.post(path=url, data=data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        url = reverse('api_token_auth')
+        response = self.client.post(
+            url, data=dict(username=self.email, password=self.eng_password)
+        )
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        response = self.client.post(
+            url, data=dict(username=self.email, password="NewPassword!123")
+        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+    def test_change_password_unsuccessful_with_bad_current_password(self):
+        self.client.force_authenticate(self.user)
+        url = reverse('change_password')
+        data = dict(current_password="wrong password", new_password="NewPassword!123")
+        response = self.client.post(url, data=data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+    def test_change_password_unsuccessful_with_bad_new_password(self):
+        self.client.force_authenticate(self.user)
+        url = reverse('change_password')
+        data = dict(current_password=self.eng_password, new_password="password")
+        response = self.client.post(url, data=data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
