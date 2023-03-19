@@ -381,7 +381,7 @@ class VerifyEmailView(CreateAPIView):
             raise ValidationError('Invalid verification link')
         user.email_verified = True
         user.save()
-        verify_link.delete()
+        VerifyEmailLink.objects.filter(user=user).delete()
         return Response(
             status=status.HTTP_200_OK, data=self.get_serializer(instance=user).data
         )
@@ -466,7 +466,7 @@ class ResetPasswordView(CreateAPIView):
         except ObjectDoesNotExist:
             pass
         # now delete the reset password link
-        ResetPasswordLink.objects.filter(uuid=data['reset_link_uuid']).delete()
+        ResetPasswordLink.objects.filter(email=data['email']).delete()
         return Response(status=status.HTTP_200_OK)
 
 
