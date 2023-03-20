@@ -330,7 +330,7 @@ class SignUpView(CreateAPIView):
         send_email(
             subject="Verify email address for Advisor",
             body=f"Click this link to verify your email address:\n"
-            f"{settings.SITE_URL}/verify_email/{str(verify_link.uuid)}",
+            f"{verify_link.link}",
             to=user.email,
         )
         return Response(status=status.HTTP_201_CREATED)
@@ -350,7 +350,7 @@ class ResendEmailVerificationLinkView(CreateAPIView):
         send_email(
             subject="Verify email address for Advisor",
             body=f"Click this link to verify your email address:\n"
-            f"{settings.SITE_URL}/verify_email/{str(verify_link.uuid)}",
+            f"{verify_link.link}",
             to=user.email,
         )
 
@@ -417,8 +417,7 @@ class RequestResetPasswordView(CreateAPIView):
 
         send_email(
             subject="Reset password for Advisor",
-            body=f"Click this link to reset your password:\n"
-            f"{settings.SITE_URL}/reset_password/{str(reset_link.uuid)}",
+            body=f"Click this link to reset your password:\n" f"{reset_link.link}",
             to=data['email'],
         )
         return Response(status=status.HTTP_200_OK)

@@ -2,6 +2,7 @@ from decimal import Decimal
 from typing import List, Optional
 from uuid import uuid4
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as BaseUserManager
 from django.db import models
@@ -400,6 +401,10 @@ class SignUpLink(TimeStampedModel):
     def is_valid(self) -> bool:
         return not User.objects.filter(email=self.email).exists()
 
+    @property
+    def link(self) -> str:
+        return f'{settings.SITE_URL}/signup/{str(self.uuid)}'
+
 
 class WaitListEntry(TimeStampedModel):
     email = models.EmailField(null=False, unique=True)
@@ -414,9 +419,17 @@ class ResetPasswordLink(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, null=False)
     expires_on = models.DateTimeField(null=False)
 
+    @property
+    def link(self) -> str:
+        return f'{settings.SITE_URL}/reset_password/{str(self.uuid)}'
+
 
 # NOTE: these will be deleted upon being used
 # TODO: use a cache for this?
 class VerifyEmailLink(TimeStampedModel):
     user = models.ForeignKey(to=User, null=False, on_delete=models.CASCADE)
     uuid = models.UUIDField(default=uuid4, editable=False, null=False)
+
+    @property
+    def link(self) -> str:
+        return f'{settings.SITE_URL}/verify_email/{str(self.uuid)}'
