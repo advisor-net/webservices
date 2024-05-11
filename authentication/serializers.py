@@ -59,7 +59,6 @@ class UserSerializer(serializers.ModelSerializer):
             'deleted_at',
             'is_active',
             'is_staff',
-            'is_superuser',
             'last_login',
             'first_name',
             'last_name',
